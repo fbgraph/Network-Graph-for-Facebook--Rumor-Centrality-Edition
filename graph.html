@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Network Graph for Facebook: Rumor Centrality</title>
+    <meta charset="utf-8" />
+
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+            font-family: 'Segoe UI', "Myriad Set Pro", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+        }
+
+        #demo-canvas {
+            border: 1px solid #000;
+            position: absolute;
+            top: 0px;
+            bottom: 50%;
+            left: 0px;
+            right: 50%;
+        }
+
+        #demo-canvas2 {
+            border: 1px solid #000;
+            position: absolute;
+            top: 0px;
+            bottom: 50%;
+            left: 50%;
+            right: 0px;
+        }
+
+        #demo-canvas3 {
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+        }
+
+        #missionControl {
+            border: 1px solid #000;
+            position: absolute;
+            top: 0px;
+            width: 100px;
+            right: 0px;
+        }
+
+        #informationArea {
+            padding: 5px 10px;
+        }
+    </style>
+
+    <script src="js/beta3.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/cytoscape.js"></script>
+    <script src="js/Main_Controller.js"></script>
+</head>
+<body>
+    <script>
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '147153755645455',
+                xfbml: true,
+                version: 'v2.5'
+            });
+
+            TryToStart();
+
+        };
+
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) { return; }
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+    <div id="modules" style="display:none">
+        <div id="buttons" class="centerContainer">
+            <span id="crossButton" class="exitButton inlineItem" onclick="functionAlert.dismiss()">×</span>
+
+            <!--        <button onclick="FB_login()">Connect with Facebook</button>
+            <button onclick="getdata('me/feed','id,message,story,created_time,likes')">Fetch Posts and Likes</button>
+            <button onclick="fatchLikes()">Fetch remaining Likes</button>
+            <button onclick="fatchUser()">Fetch Users data</button>
+            <button onclick="pair()">Pair</button>
+                -->
+            <div id="start">
+                <p class="subTitle">Comfirm you allow this app to copy data from your Timeline. We do not keep it.</p>
+                <div id="FBProfileContainer">
+                    <img id="loginComfirmPicture" class="inlineItem" />
+                    <span id="loginComfirmName" class="subTitle inlineItem"></span>
+                </div>
+                <div class="spacer"></div>
+                <span class="button inlineItem" onclick="startProcess()">Confirm and Start</span>
+            </div>
+
+            <div id="processing" class="disappear">
+                <!-- <h3>Loading data from Facebook...</h3>-->
+                <p class="subTitle" id="loadingFeedsCount">0 feeds</p>
+                <p class="subTitle" id="loadinglikesCount">0 likes</p>
+
+            </div>
+
+            <!--
+            <div id="download" class="disappear">
+                <h3 id="FBUserName">Result</h3>
+                <p class="subTitle" id="resultFeedsCount">0 feeds</p>
+                <p class="subTitle" id="resultLikesCount">0 likes from 0 users</p>
+
+                <div class="spacer"></div>
+
+                <h3>Download data sources for Gephi</h3>
+                <span class="button inlineItem" onclick="downloadNode()">Download Nodes</span><br />
+                <span class="button inlineItem" onclick="downloadEdge()">Download Edges</span>
+
+            </div>
+            -->
+            <!--
+            <div id="alertFooter">
+                <span class="button inlineItem" onclick="stopFetch()">Stop</span>
+            </div>
+                -->
+        </div>
+        <div id="permissionWarring" class="centerContainer">
+            <h3>Timeline posts required</h3>
+            <p class="subTitle">In order to obtain necessary information, please allow this app to get your Timeline posts.</p>
+            <span class="button inlineItem" onclick="permissionWarringComfirm()">OK</span>
+        </div>
+    </div>
+    <div id="informationArea"></div>
+    <div id="demo-canvas3">
+    </div>
+
+    <!-- <div id="missionControl">
+         <button onclick="TryToStart()">getdata</button>
+         <button onclick="startProcess()">startProcess</button>
+         <button onclick="ProcessFinish()">Refresh</button>
+         <div id="consoleArea"></div>
+         <div id="consoleArea2"></div>
+     </div>-->
+</body>
+</html>

@@ -1,0 +1,274 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Network Graph for Facebook: Rumor Centrality</title>
+    <meta charset="utf-8" />
+    <style>
+        #warning {
+            padding: 12px 12px;
+            font-size: 16px;
+            background-color: #ffd800;
+        }
+
+        #cover {
+            background: rgba(175, 24, 97, 1);
+            color: #FFF;
+            height: 788px;
+            background-image: url('src/c2.png'),linear-gradient(#b01861, #f2f2f2);
+            background-size: initial;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-position: center 50%;
+        }
+
+        #transperentBg {
+            width: 100%;
+            background: linear-gradient(to bottom,#000 100%,#000 0%);
+        }
+
+        #rumorCentrailty {
+            padding-bottom: 30px;
+        }
+
+        #howWorks {
+            padding-bottom: 30px;
+        }
+
+        #privacy {
+            padding-bottom: 30px;
+        }
+
+        #credit {
+            background-color: rgb(51,51,51);
+            color: #FFF;
+            padding-bottom: 30px;
+        }
+
+        .creditList {
+            width: 20%;
+            min-width: 150px;
+            text-align: left;
+            box-sizing: content-box;
+        }
+
+            .creditList dt {
+                font-weight: 700;
+            }
+
+            .creditList dd:last-of-type {
+                margin-bottom: 10px;
+            }
+
+        #FBProfileContainer {
+            display: inline-block;
+            padding: 10px;
+            color: #FFF;
+            background-color: #3b5998;
+            min-height: 70px;
+            min-width: 170px;
+            margin-bottom: 5px;
+            box-sizing: border-box;
+        }
+    </style>
+    <link href="css/alert.css" rel="stylesheet" />
+    <link href="css/loader.css" rel="stylesheet" />
+    <link href="css/common_style.css" rel="stylesheet" />
+    <script src="js/beta3.js"></script>
+    <script src="js/index.js"></script>
+    <script type="text/javascript">
+        // Pop up a new window
+        function popUpLink(obj) {
+            var w = 600;
+            var h = 400;
+            var left = (screen.width / 2) - (w / 2);
+            var top = (screen.height / 2) - (h / 2);
+            window.open(obj.dataset.href, "", "width=" + w + ", height=" + h + ", top=" + top + ", left=" + left);
+        }
+
+        // This is called when the user clicked the confirm button
+        var comfirmButtonDidClick = function () {
+            window.open("/graph.html");
+        }
+    </script>
+</head>
+<body>
+    <script>
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '147153755645455',
+                xfbml: true,
+                version: 'v2.5'
+            });
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) { return; }
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+    </script>
+
+    <div id="modules" style="display:none">
+        <div id="buttons" class="centerContainer">
+            <span id="crossButton" class="exitButton inlineItem" onclick="functionAlert.dismiss()">×</span>
+
+            <div id="start">
+                <p class="subTitle">Comfirm you allow this app to copy data from your Timeline. We do not keep it.</p>
+                <div id="FBProfileContainer">
+                    <img id="loginComfirmPicture" class="inlineItem" />
+                    <span id="loginComfirmName" class="subTitle inlineItem"></span>
+                </div>
+                <div class="spacer"></div>
+                <span class="button inlineItem" onclick="comfirmButtonDidClick()">Confirm and Start</span>
+            </div>
+
+            <div id="processing" class="disappear">
+                <h3>Loading data from Facebook...</h3>
+                <p class="subTitle" id="loadingFeedsCount">0 feeds</p>
+                <p class="subTitle" id="loadinglikesCount">0 likes</p>
+
+                <div class='loader'>
+                    <div class='circle'></div>
+                    <div class='circle'></div>
+                    <div class='circle'></div>
+                    <div class='circle'></div>
+                    <div class='circle'></div>
+                </div>
+            </div>
+
+            <div id="download" class="disappear">
+                <h3 id="FBUserName">Result</h3>
+                <p class="subTitle" id="resultFeedsCount">0 feeds</p>
+                <p class="subTitle" id="resultLikesCount">0 likes from 0 users</p>
+
+                <div class="spacer"></div>
+
+                <h3>Download data sources for Gephi</h3>
+                <span class="button inlineItem" onclick="downloadNode()">Download Nodes</span><br />
+                <span class="button inlineItem" onclick="downloadEdge()">Download Edges</span>
+
+            </div>
+        </div>
+        <div id="permissionWarring" class="centerContainer">
+            <h3>Timeline posts required</h3>
+            <p class="subTitle">In order to obtain necessary information, please allow this app to get your Timeline posts.</p>
+            <span class="button inlineItem" onclick="permissionWarringComfirm()">OK</span>
+        </div>
+    </div>
+
+    <div id="warning">
+        <p class="centerContainer">
+            This application is currently not available to the public.
+        </p>
+    </div>
+
+    <section id="cover">
+        <div class="centerContainer textCenter">
+            <h1>Welcome to Network Graph for Facebook</h1>
+            <h1>Rumor Centrality Edition</h1>
+            <p class="subTitle subPadding">Visualizes your Timeline. Draws Network graph of your friends.</p>
+            <a class="linkButton transparentBlackBg" onclick="TryToStart()">Start</a>
+        </div>
+    </section>
+
+    <section id="rumorCentrailty">
+        <div class="centerContainer">
+            <h2 class="cityuRed">Rumor Centrality Edition</h2>
+            <p class="subTitle">In response to a request from Dr. Chee Wei Tan at the City University of Hong Kong, this new edition of Network Graph for Facebook is built. The only different is that this one will highlight the most rumor centralized friend.</p>
+            <p class="subTitle">If you want to use the original edition, please go to <a target="_blank" href="http://netgraph.laichunkiu.org/">http://netgraph.laichunkiu.org/</a>.</p>
+        </div>
+    </section>
+
+    <section id="howWorks">
+        <div class="centerContainer flexContainer">
+            <div class="flexItem">
+                <h2 class="cityuRed">Links your friends</h2>
+                <p class="subTitle">As a data visualization tool, this app links your Facebook friends if they like the same post. A network graph will be generated online.</p>
+                <p class="subTitle">The network graph is built with Cytoscape.js. For more information about the library, please go to <a href="http://js.cytoscape.org/" target="_blank">http://js.cytoscape.org/</a>.</p>
+            </div>
+            <div class="flexItem">
+                <h2 class="cityuRed">Visualizes your Timeline</h2>
+                <p class="subTitle">Friends who like the following type of post since 2015 will be taken into account.<p />
+                <ul>
+                    <li>Your post</li>
+                    <li>Status update</li>
+                    <li>Shared story</li>
+                    <li>Added photo/video</li>
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="privacy">
+        <div class="centerContainer">
+            <h2 class="cityuRed">Privacy Policy</h2>
+            <p class="subTitle">Your information will not be collected or stored by us. The whole process, from data fetching to files exporting, is handled within your web browser. Extracted data from Facebook will be immediately erased when this page is closed or reloaded.</p>
+            <p class="subTitle">After connected with Facebook, if you don't want to use this app anymore, you may remove it in your Facebook App Settings.</p>
+        </div>
+    </section>
+
+    <section id="credit">
+        <div class="centerContainer">
+            <p class="subTitle">Network Graph for Facebook is a further developed project of a student team project from the course, The Art and Science of Data, in Summer Semester 2015 at the City University of Hong Kong.</p>
+            <h2>Credits</h2>
+            <dl class="creditList inlineItem">
+                <dt>Advisor</dt>
+                <dd>Kim Wai Lau</dd>
+            </dl>
+            <dl class="creditList inlineItem">
+                <dt>Attendee</dt>
+                <dd>Hiu Yan Tong</dd>
+            </dl>
+            <dl class="creditList inlineItem">
+                <dt>Developer</dt>
+                <dd>Chun Kiu Lai
+                <dd>
+            </dl>
+
+        </div>
+    </section>
+
+
+    <footer>
+        <div class="centerContainer">
+            <div class="flexContainer">
+                <div class="flexItem ">
+                    <h4 class="footerItemTitle">Like us on Facebook</h4>
+                    <p class="smallDescription">Stay with Network Graph for Facebook: Rumor Centrality.</p>
+
+
+                    <div class="fb-like"
+                         data-layout="button_count"
+                         data-action="like"
+                         data-show-faces="false"
+                         data-share="false">
+
+                    </div>
+
+                </div>
+                <div class="flexItem ">
+                    <h4 class="footerItemTitle">Share this page </h4>
+                    <p class="smallDescription">Tell your friends about us.</p>
+                    <div>
+                        <a class="inlineItem" onclick="popUpLink(this)" href="javascript:void(0);" data-href="https://www.facebook.com/dialog/share?app_id=988342487864320&amp;display=popup&amp;href=http://netgraph.laichunkiu.org/&redirect_uri=http://netgraph.laichunkiu.org/">
+                            <img src="src/FB-f-Logo__white_29.png">
+                        </a>
+                        <a class="inlineItem" onclick="popUpLink(this)" href="javascript:void(0);" data-href="https://twitter.com/intent/tweet?url=http://netgraph.laichunkiu.org/">
+                            <img src="src/TwitterLogo_white.png">
+                        </a>
+                    </div>
+                </div>
+
+                <div class="flexItem ">
+                    <h4 class="footerItemTitle">Network Graph for Facebook: Rumor Centrality</h4>
+                    <p class="smallDescription">© 2015 Network Graph for Facebook: Rumor Centrality</p>
+
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
