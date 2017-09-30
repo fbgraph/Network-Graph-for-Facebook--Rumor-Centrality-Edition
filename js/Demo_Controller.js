@@ -1,29 +1,128 @@
 ﻿/// <reference path="cytoscape.js" />
 
+var posts_dataset;
+var users_dataset;
+
 // will be used to store graph data
 var cy;
 
 // This is called when the page is loaded.
 window.onload = function () {
+
+    var getJSON = function (url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'json';
+        xhr.onload = function () {
+            var status = xhr.status;
+            if (status === 200) {
+                callback(null, xhr.response);
+            } else {
+                callback(status, xhr.response);
+            }
+        };
+        xhr.send();
+    };
+
+    getJSON('/DemoDataset/posts.json',
+        function (err, data) {
+            if (err !== null) {
+                alert('Something went wrong: ' + err);
+            } else {
+                posts_dataset = data;
+                getJSON('/DemoDataset/users.json',
+                    function (err, data) {
+                        if (err !== null) {
+                            alert('Something went wrong: ' + err);
+                        } else {
+                            users_dataset = data;
+                            DataDidload();
+                        }
+                    });
+            }
+        });
+
+
 }
 
-// This is called when the app will get post data from Facebook.
-var startProcess = function () {
-    isProcessFlow = true;
-    document.getElementById("informationArea").innerHTML += "Getting data from Facebook..." + "<br>";
-    document.getElementById("informationArea").appendChild(document.getElementById("processing").cloneNode(true));
-    var remove = document.getElementById("processing");
-    remove.parentNode.removeChild(remove);
-    getdata('me/posts', 'id,status_type,likes');
-}
+var DataDidload = function () {
+    var mypair = pair(posts_dataset);
+    var links = mypair.links;
+    var users = cUserData(users_dataset);
 
-// This is called when the app have got post data from Facebook.
-var ProcessFinish = function (FBdata) {
-    document.getElementById("informationArea").innerHTML += "Finish." + "<br>";
-    var usersdata = cUserData(FBdata.users);
-    var linksData = cPairData(FBdata.pairs);
-    var data = usersdata.concat(linksData);
+    var data = users.concat(links);
+
+    document.getElementById("informationArea").innerText = "-Demo dataset-\n";
+    document.getElementById("informationArea").innerText += posts_dataset.length + " feeds\n";
+    document.getElementById("informationArea").innerText += mypair.likeCount + " likes\n";
+
     dataToGraph(data);
+}
+
+var updateUserIDInPosts = function (oldID, newID) {
+    for (var i = 0; i < posts_dataset.length; i++) {
+        var _post = posts_dataset[i];
+
+        for (var j = 0; j < _post.likes.length; j++) {
+            var _like = _post.likes[j];
+            if (_like.id == oldID) {
+                _like.id = newID.toString();
+            }
+        }
+
+    }
+}
+
+var pair = function (postData) {
+    var links = [];
+    var likeCount = 0;
+    var _length = postData.length;
+    for (var p = 0; p < _length; p++) {
+
+        var _post = postData[p];
+        var likes = _post.likes;
+
+        for (var i = 0; i < likes.length; i++) {
+            likeCount++;
+            for (var j = i + 1; j < likes.length; j++) {
+
+                var pair = {};
+                pair.data = {};
+                pair.data.id = likes[i].id + "-" + likes[j].id;
+                pair.data.source = likes[i].id;
+                pair.data.target = likes[j].id;
+                links.push(pair);
+            }
+        }
+    }
+    return { links: links, likeCount: likeCount };
+}
+
+// Converts users data got from Facebook into cytoscape.js input format.
+var cUserData = function (users) {
+    var data = [];
+    for (var i = 0; i < users.length; i++) {
+        var user = {};
+        user.data = {};
+        user.data.id = users[i].id;
+        user.data.name = users[i].name;
+        data.push(user);
+    }
+    return data;
+}
+
+// Converts links data got from Facebook into cytoscape.js input format.
+var cPairData = function (pairs) {
+    var data = [];
+    for (var i = 0; i < pairs.length; i++) {
+        var user = {};
+        user.data = {};
+        user.data.id = pairs[i].a.id + "-" + pairs[i].b.id;
+        user.data.source = pairs[i].a.id;
+        user.data.target = pairs[i].b.id;
+        data.push(user);
+    }
+    return data;
 }
 
 // Renders the network graph
@@ -46,7 +145,8 @@ var render = function (Gdata, target) {
                 selector: 'edge',
                 style: {
                     'width': 3,
-                    'line-color': '#ccc'
+                    'line-color': '#CCC',
+                    'opacity': 0.33,
                 }
             },
             {
@@ -124,33 +224,6 @@ var render = function (Gdata, target) {
         }
     });
 
-}
-
-// Converts users data got from Facebook into cytoscape.js input format.
-var cUserData = function (users) {
-    var data = [];
-    for (var i = 0; i < users.length; i++) {
-        var user = {};
-        user.data = {};
-        user.data.id = users[i].id;
-        user.data.name = users[i].name;
-        data.push(user);
-    }
-    return data;
-}
-
-// Converts links data got from Facebook into cytoscape.js input format.
-var cPairData = function (pairs) {
-    var data = [];
-    for (var i = 0; i < pairs.length; i++) {
-        var user = {};
-        user.data = {};
-        user.data.id = pairs[i].a.id + "-" + pairs[i].b.id;
-        user.data.source = pairs[i].a.id;
-        user.data.target = pairs[i].b.id;
-        data.push(user);
-    }
-    return data;
 }
 
 // Find the most rumor centralized node.
